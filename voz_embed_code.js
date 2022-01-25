@@ -1,16 +1,12 @@
 // ==UserScript==
 // @name        vozembedcode
 // @include     https://voz.vn/*
-// @version      1
+// @version      2
 // @description  Autodecodes any Base64 text on a "code box" and show it as a link.
 // @updateURL   https://raw.githubusercontent.com/git1-eipi10/voz_code/main/voz_embed_code.js
 // @match        none
 // @grant        none
 // ==/UserScript==
-
-function b64_to_utf8(str) {
-  return decodeURIComponent(escape(window.atob(str)));
-}
 
 function setAttributes(el, attrs) {
   Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
@@ -66,44 +62,36 @@ function embed_general(contents, item_i, embed_type) {
 
 var extensions = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
 
-if (document.getElementsByClassName("bbCodeBlock--code")) {
-  var items = document.getElementsByClassName("bbCodeBlock--code");
-  for(var i = 0; i < items.length; i++) {
-    var content = items[i].children[1].children[0];
-    if (content.className === "bbCodeCode") {
-      if (content.innerText.startsWith("aHR0c")) {
-        decoded = atob(content.innerText.split("\n")[0]);
-        embed_general(decoded, items[i], "link");
-        // urls = decoded.split("\n");
-        // for (var j = 0; j < urls.length; j++) {
-        //   link_embed = embed_link(urls[j]);
-        //   items[i].parentElement.insertBefore(link_embed, items[i]);
-        //   br = document.createElement("br");
-        //   items[i].parentElement.insertBefore(br, items[i]);
-        // }
+var items_codes = document.querySelectorAll(".bbCodeCode");
+var items_quote = document.querySelectorAll(".bbCodeBlock--quote > .bbCodeBlock-content")
+
+if (items_codes) {
+  for(var i = 0; i < items_codes.length; i++) {
+    var parent = items_codes[i].closest(".bbCodeBlock--code")
+    if (items_codes[i].innerText.startsWith("aHR0c")) {
+      decoded = atob(items_codes[i].innerText.split("\n")[0]);
+      embed_general(decoded, parent, "link");
+    }
+    else if (items_codes[i].innerText.startsWith("http")) {
+      if (endsWith2(extensions, items_codes[i].innerText)) {
+        embed_general(items_codes[i].innerText, parent, "image");
       }
-      else if (content.innerText.startsWith("http")) {
-        if (endsWith2(extensions, content.innerText)) {
-          embed_general(content.innerText, items[i], "image");
-          // urls = content.innerText.split("\n");
-          // for (var j = 0; j < urls.length; j++) {
-          //   img_embed = embed_image();
-          //   items[i].parentElement.insertBefore(img_embed, items[i]);
-          // }
-        }
-        else if (content.innerText.startsWith("https://imgur.com") && !content.innerText.startsWith("https://imgur.com/a/")) {
-          embed_general(content.innerText, items[i], "imgur");
-          // imgur_id = content.innerText.split(".com/")[1];
-          // img_link = "https://i.imgur.com/" + imgur_id + ".gif";
-          // img_embed = embed_image(img_link);
-          // items[i].parentElement.insertBefore(img_embed, items[i]);
-        }
-        else {
-          embed_general(content.innerText, items[i], "link");
-          // link_embed = embed_link(content.innerText);
-          // items[i].parentElement.insertBefore(link_embed, items[i]);
-        }
+      else if (items_codes[i].innerText.startsWith("https://imgur.com") && !items_codes[i].innerText.startsWith("https://imgur.com/a/")) {
+        embed_general(items_codes[i].innerText, parent, "imgur");
       }
+      else {
+        embed_general(items_codes[i].innerText, parent, "link");
+      }
+    }
+  }
+}
+
+if (items_quote) {
+  for(var i = 0; i < items_quote.length; i++) {
+    if (items_quote[i].innerText.startsWith("aHR0c")) {
+      var parent = items_quote[i].closest(".bbCodeBlock--quote")
+      decoded = atob(items_quote[i].innerText.split("\n")[0]);
+      embed_general(decoded, parent, "link");
     }
   }
 }
