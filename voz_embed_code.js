@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name        vozembedcode
-// @include     https://voz.vn/*
+// @name         vozembedcode
+// @include      https://voz.vn/*
 // @version      2
-// @description  Autodecodes any Base64 text on a "code box" and show it as a link.
-// @updateURL   https://raw.githubusercontent.com/git1-eipi10/voz_code/main/voz_embed_code.js
+// @description  Autodecode base64 text and preview images, links in code/quote box
+// @updateURL    https://raw.githubusercontent.com/git1-eipi10/voz_code/main/voz_embed_code.js
 // @match        none
 // @grant        none
 // ==/UserScript==
