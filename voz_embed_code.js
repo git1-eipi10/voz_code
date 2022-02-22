@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name         vozembedcode
-// @include      https://voz.vn/*
-// @version      2
-// @description  Autodecode base64 text and preview images, links in code/quote box
-// @updateURL    https://raw.githubusercontent.com/git1-eipi10/voz_code/main/voz_embed_code.js
-// @match        none
-// @grant        none
+// @name        vozembedcode
+// @include     https://voz.vn/*
+// @version     3
+// @description Autodecode base64 text and preview images, links...
+// @updateURL   https://raw.githubusercontent.com/git1-eipi10/voz_code/main/voz_embed_code.js
+// @require     https://raw.githubusercontent.com/uzairfarooq/arrive/master/minified/arrive.min.js
+// @run-at      document-start
 // ==/UserScript==
 
 function setAttributes(el, attrs) {
@@ -55,43 +55,34 @@ function embed_general(contents, item_i, embed_type) {
       element_embed = embed_image(img_link);
     }
     item_i.parentElement.insertBefore(element_embed, item_i);
-    var br = document.createElement("br");
-    item_i.parentElement.insertBefore(br, item_i);
   }
 }
 
 var extensions = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
 
-var items_codes = document.querySelectorAll(".bbCodeCode");
-var items_quote = document.querySelectorAll(".bbCodeBlock--quote > .bbCodeBlock-content")
-
-if (items_codes) {
-  for(var i = 0; i < items_codes.length; i++) {
-    var parent = items_codes[i].closest(".bbCodeBlock--code")
-    if (items_codes[i].innerText.startsWith("aHR0c")) {
-      decoded = atob(items_codes[i].innerText.split("\n")[0]);
-      embed_general(decoded, parent, "link");
+document.arrive(".bbCodeCode", item => {
+  var parent = item.closest(".bbCodeBlock--code");
+  if (item.innerText.startsWith("aHR0c")) {
+    decoded = atob(item.innerText.split("\n")[0]);
+    embed_general(decoded, parent, "link");
+  }
+  else if (item.innerText.startsWith("http")) {
+    if (endsWith2(extensions, item.innerText)) {
+      embed_general(item.innerText, parent, "image");
     }
-    else if (items_codes[i].innerText.startsWith("http")) {
-      if (endsWith2(extensions, items_codes[i].innerText)) {
-        embed_general(items_codes[i].innerText, parent, "image");
-      }
-      else if (items_codes[i].innerText.startsWith("https://imgur.com") && !items_codes[i].innerText.startsWith("https://imgur.com/a/")) {
-        embed_general(items_codes[i].innerText, parent, "imgur");
-      }
-      else {
-        embed_general(items_codes[i].innerText, parent, "link");
-      }
+    else if (item.innerText.startsWith("https://imgur.com") && !item.innerText.startsWith("https://imgur.com/a/")) {
+      embed_general(item.innerText, parent, "imgur");
+    }
+    else {
+      embed_general(item.innerText, parent, "link");
     }
   }
-}
+});
 
-if (items_quote) {
-  for(var i = 0; i < items_quote.length; i++) {
-    if (items_quote[i].innerText.startsWith("aHR0c")) {
-      var parent = items_quote[i].closest(".bbCodeBlock--quote")
-      decoded = atob(items_quote[i].innerText.split("\n")[0]);
-      embed_general(decoded, parent, "link");
-    }
+document.arrive(".bbCodeBlock--quote > .bbCodeBlock-content", item => {
+  if (item.innerText.startsWith("aHR0c")) {
+    var parent = item.closest(".bbCodeBlock--quote");
+    decoded = atob(item.innerText.split("\n")[0]);
+    embed_general(decoded, parent, "link");
   }
-}
+});
