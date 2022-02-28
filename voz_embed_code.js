@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        vozembedcode
 // @include     https://voz.vn/*
-// @version     4
+// @version     5
 // @description Autodecode base64 text and preview images, links...
 // @updateURL   https://raw.githubusercontent.com/git1-eipi10/voz_code/main/voz_embed_code.js
 // @require     https://raw.githubusercontent.com/uzairfarooq/arrive/master/minified/arrive.min.js
@@ -61,10 +61,8 @@ var extensions = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
 
 document.arrive(".bbCodeCode", item => {
   let parent = item.closest(".bbCodeBlock--code");
-  if (item.innerText.startsWith("aHR0c")) {
-    decoded = atob(item.innerText.split("\n")[0]);
-    embed_general(decoded, parent, "link");
-  }
+  if (item.innerText.startsWith("aHR0c"))
+    embed_general(atob(item.innerText.split("\n")[0]), parent, "link");
   else if (item.innerText.startsWith("http")) {
     if (endsWith2(extensions, item.innerText))
       embed_general(item.innerText, parent, "image");
@@ -76,9 +74,6 @@ document.arrive(".bbCodeCode", item => {
 });
 
 document.arrive(".bbCodeBlock--quote > .bbCodeBlock-content", item => {
-  if (item.innerText.startsWith("aHR0c")) {
-    let parent = item.closest(".bbCodeBlock--quote");
-    decoded = atob(item.innerText.split("\n")[0]);
-    embed_general(decoded, parent, "link");
-  }
+  if (item.innerText.startsWith("aHR0c"))
+    embed_general(atob(item.innerText.split("\n")[0]), item.closest(".bbCodeBlock--quote"), "link");
 });
