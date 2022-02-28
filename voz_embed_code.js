@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        vozembedcode
 // @include     https://voz.vn/*
-// @version     3
+// @version     4
 // @description Autodecode base64 text and preview images, links...
 // @updateURL   https://raw.githubusercontent.com/git1-eipi10/voz_code/main/voz_embed_code.js
 // @require     https://raw.githubusercontent.com/uzairfarooq/arrive/master/minified/arrive.min.js
@@ -12,16 +12,15 @@ function setAttributes(el, attrs) {
   Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
 }
 
-function endsWith2(ext, link) {
-  for (var i = 0; i < ext.length; i++) {
-    if (link.endsWith(ext[i])) { return true; }
-  }
+function endsWith2(exts, link) {
+  for (const ext of exts)
+    if (link.endsWith(ext)) return true;
   return false;
 }
 
 function embed_link(link) {
   let link_embed = document.createElement("a");
-  var attrs = {
+  let attrs = {
     href: link,
     target: "_blank",
     class: "link link--external",
@@ -34,7 +33,7 @@ function embed_link(link) {
 
 function embed_image(img_link) {
   let img_embed = document.createElement("img");
-  var attrs = {
+  let attrs = {
     src: img_link,
     class: "bbImage",
   }
@@ -43,45 +42,42 @@ function embed_image(img_link) {
   return img_embed;
 }
 
-function embed_general(contents, item_i, embed_type) {
-  var urls = contents.split("\n");
-  var element_embed = "";
-  for (var j = 0; j < urls.length; j++) {
-    if (embed_type === "link") { element_embed = embed_link(urls[j]); }
-    else if (embed_type === "image") { element_embed = embed_image(urls[j]); }
+function embed_general(contents, item, embed_type) {
+  let urls = contents.split("\n");
+  let element_embed = "";
+  for (const url of urls) {
+    if (embed_type === "link") element_embed = embed_link(url);
+    else if (embed_type === "image") element_embed = embed_image(url);
     else if (embed_type === "imgur") {
-      imgur_id = urls[j].split(".com/")[1];
+      imgur_id = url.split(".com/")[1];
       img_link = "https://i.imgur.com/" + imgur_id + ".gif";
       element_embed = embed_image(img_link);
     }
-    item_i.parentElement.insertBefore(element_embed, item_i);
+    item.parentElement.insertBefore(element_embed, item);
   }
 }
 
 var extensions = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
 
 document.arrive(".bbCodeCode", item => {
-  var parent = item.closest(".bbCodeBlock--code");
+  let parent = item.closest(".bbCodeBlock--code");
   if (item.innerText.startsWith("aHR0c")) {
     decoded = atob(item.innerText.split("\n")[0]);
     embed_general(decoded, parent, "link");
   }
   else if (item.innerText.startsWith("http")) {
-    if (endsWith2(extensions, item.innerText)) {
+    if (endsWith2(extensions, item.innerText))
       embed_general(item.innerText, parent, "image");
-    }
-    else if (item.innerText.startsWith("https://imgur.com") && !item.innerText.startsWith("https://imgur.com/a/")) {
+    else if (item.innerText.startsWith("https://imgur.com") && !item.innerText.startsWith("https://imgur.com/a/"))
       embed_general(item.innerText, parent, "imgur");
-    }
-    else {
+    else
       embed_general(item.innerText, parent, "link");
-    }
   }
 });
 
 document.arrive(".bbCodeBlock--quote > .bbCodeBlock-content", item => {
   if (item.innerText.startsWith("aHR0c")) {
-    var parent = item.closest(".bbCodeBlock--quote");
+    let parent = item.closest(".bbCodeBlock--quote");
     decoded = atob(item.innerText.split("\n")[0]);
     embed_general(decoded, parent, "link");
   }
